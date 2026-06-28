@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+// Joystick Pack base class — exposes .Direction (Vector2)
+// Make sure the Joystick Pack asset is imported (Assets/Joystick Pack).
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerTPS : MonoBehaviour
@@ -22,6 +24,10 @@ public class PlayerTPS : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundDistance = 0.3f;
     [SerializeField] private LayerMask groundMask;
+
+    [Header("Mobile Input")]
+    [Tooltip("Drag a Joystick Pack prefab (e.g. FixedJoystick) from the in-game Canvas here.")]
+    [SerializeField] private Joystick mobileJoystick;
 
     private bool isGrounded;
 
@@ -83,15 +89,20 @@ public class PlayerTPS : MonoBehaviour
 
     private void HandleMovement()
     {
-        Vector3 move = new Vector3(moveInput.x, 0, moveInput.y);
+        // Merge keyboard (New Input System) and on-screen joystick.
+        // ClampMagnitude(1) prevents diagonal over-speed on either device.
+        Vector2 joystickDir = (mobileJoystick != null) ? mobileJoystick.Direction : Vector2.zero;
+        Vector2 combined    = Vector2.ClampMagnitude(moveInput + joystickDir, 1f);
+
+        Vector3 move = new Vector3(combined.x, 0, combined.y);
 
         if (move.magnitude > 0.1f)
         {
             Vector3 camForward = cameraTransform.forward;
-            Vector3 camRight = cameraTransform.right;
+            Vector3 camRight   = cameraTransform.right;
 
             camForward.y = 0;
-            camRight.y = 0;
+            camRight.y   = 0;
 
             Vector3 moveDirection = camForward * move.z + camRight * move.x;
 
@@ -110,6 +121,15 @@ public class PlayerTPS : MonoBehaviour
         {
             animator.SetBool("isWalk", false);
         }
+    }
+
+    /// <summary>
+    /// Called by the on-screen Jump Button's OnClick() event.
+    /// Wire this in the Inspector: Button → OnClick() → PlayerTPS.OnMobileJumpPressed
+    /// </summary>
+    public void OnMobileJumpPressed()
+    {
+        jumpPressed = true;
     }
 
     private void HandleJump()

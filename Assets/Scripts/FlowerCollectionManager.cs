@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Singleton manager yang melacak progress pengumpulan plant_flower_crystalbud.
@@ -44,18 +45,72 @@ public class FlowerCollectionManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         CreateUI();
+
+        // Dengarkan event scene loaded untuk reset state setiap berpindah scene
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    /// <summary>
+    /// Dipanggil otomatis setiap kali scene baru selesai di-load.
+    /// Reset collectedCount dan cari ulang PortalController agar tidak pakai referensi scene lama.
+    /// </summary>
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Reset jumlah bunga yang dikumpulkan
+        collectedCount = 0;
+
+        // Reset tampilan counter
+        if (counterText != null)
+        {
+            counterText.text = $"0 / {totalFlowers}";
+            counterText.color = Color.white;
+        }
+
+        // Reset warna accent line popup
+        if (accentLineImg != null)
+            accentLineImg.color = new Color(0.85f, 0.3f, 0.85f, 1f);
+
+        // Sembunyikan semua popup yang mungkin masih terbuka
+        if (popupPanel != null)       popupPanel.SetActive(false);
+        if (portalPopupPanel != null) portalPopupPanel.SetActive(false);
+
+        // Hentikan coroutine popup yang mungkin masih berjalan
+        if (hidePopupCoroutine != null)
+        {
+            StopCoroutine(hidePopupCoroutine);
+            hidePopupCoroutine = null;
+        }
+
+        // Reset referensi portal (scene lama sudah destroyed)
+        portalController = null;
+
+        // Auto-find portal di scene baru (dengan delay 1 frame agar Awake semua object selesai)
+        StartCoroutine(FindPortalNextFrame());
+
+        Debug.Log($"[FlowerCollectionManager] Scene '{scene.name}' loaded — state direset.");
+    }
+
+    private System.Collections.IEnumerator FindPortalNextFrame()
+    {
+        yield return null; // tunggu 1 frame
+        portalController = FindObjectOfType<PortalController>();
+        if (portalController != null)
+            Debug.Log("[FlowerCollectionManager] PortalController ditemukan: " + portalController.name);
     }
 
     void Start()
     {
-        // Auto-find portal jika belum di-assign via inspector
+        // Auto-find portal saat pertama kali scene load (OnSceneLoaded belum terpanggil di scene pertama)
         if (portalController == null)
         {
             portalController = FindObjectOfType<PortalController>();
             if (portalController != null)
-                Debug.Log("[FlowerCollectionManager] Portal ditemukan: " + portalController.name);
-            else
-                Debug.LogWarning("[FlowerCollectionManager] PortalController tidak ditemukan di scene!");
+                Debug.Log("[FlowerCollectionManager] Portal ditemukan (Start): " + portalController.name);
         }
     }
 

@@ -1,3 +1,6 @@
+# ============================================================
+#  Unity Standard Ignores
+# ============================================================
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -5,15 +8,16 @@
 [Bb]uilds/
 [Ll]ogs/
 UserSettings/
-
 MemoryCaptures/
+Packages/
 
+# Unity AssetStore tools
 Assets/AssetStoreTools*
 
+# IDE
 .vs/
 .idea/
 .gradle/
-
 *.csproj
 *.unityproj
 *.sln
@@ -27,4 +31,62 @@ Assets/AssetStoreTools*
 *.svd
 *.pdb
 
+# OS
 .DS_Store
+Thumbs.db
+
+# ============================================================
+#  Unused / Irrelevant Asset Packages (tidak dipakai di game)
+# ============================================================
+
+# Racing / Car assets (tidak relevan untuk game Rapunzel)
+Assets/ARCADE - FREE Racing Car/
+Assets/ARCADE - FREE Racing Car.meta
+Assets/Pack_FREE_Cars/
+Assets/Pack_FREE_Cars.meta
+
+# Karakter tidak dipakai
+Assets/Elsa/
+Assets/Elsa.meta
+Assets/PolitePenguin/
+Assets/PolitePenguin.meta
+Assets/Darth_Artisan/
+Assets/Darth_Artisan.meta
+Assets/Floreswa/
+Assets/Floreswa.meta
+
+# Environment tidak dipakai
+Assets/SimpleTownLite/
+Assets/SimpleTownLite.meta
+Assets/Low Poly Bedroom Asset Pack/
+Assets/Low Poly Bedroom Asset Pack.meta
+
+# Material praktikum / temp
+Assets/Bahan Praktikum TPS/
+Assets/Bahan Praktikum TPS.meta
+
+# Unity sample/tutorial info
+Assets/TutorialInfo/
+Assets/TutorialInfo.meta
+
+# File animasi sisa / orphan
+Assets/capsule.anim
+Assets/capsule.anim.meta
+Assets/loop.anim
+Assets/loop.anim.meta
+Assets/Capsule.controller
+Assets/Capsule.controller.meta
+Assets/fish03.controller
+Assets/fish03.controller.meta
+
+# Screenshots folder
+Assets/Screenshots/
+Assets/Screenshots.meta
+
+# Terrain asset besar (generated, tidak perlu di VCS)
+Assets/New Terrain.asset
+Assets/New Terrain.asset.meta
+
+# Input System default (tidak dipakai, pakai PlayerInputs.inputactions)
+Assets/InputSystem_Actions.inputactions
+Assets/InputSystem_Actions.inputactions.meta

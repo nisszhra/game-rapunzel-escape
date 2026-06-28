@@ -15,10 +15,19 @@ public class PortalController : MonoBehaviour
     //  Inspector Settings
     // ─────────────────────────────────────────────
     [Header("Portal Settings")]
-    [Tooltip("Nama scene level berikutnya (harus sudah ada di Build Settings)")]
-    public string nextSceneName = "Level2";
+    [Tooltip("Nama scene level berikutnya — digunakan jika returnToMenu = false.")]
+    public string nextSceneName = "TPS 2";
     [Tooltip("Fallback: load scene by build index jika string kosong")]
-    public int nextSceneIndex = 1;
+    public int nextSceneIndex = 2;
+
+    [Header("Portal State")]
+    [Tooltip("Jika true, portal mulai dalam keadaan terkunci (collider off, VFX tersembunyi). " +
+             "Akan dibuka oleh FlowerCollectionManager saat semua bunga terkumpul.")]
+    public bool startLocked = true;
+
+    [Tooltip("Jika true: setelah masuk portal, kembali ke Main Menu (peta level). " +
+             "Jika false: langsung load scene nextSceneName.")]
+    public bool returnToMenu = true;
 
     [Header("Trigger Zone")]
     [Tooltip("Radius area trigger player masuk portal")]
@@ -67,6 +76,14 @@ public class PortalController : MonoBehaviour
         // Siapkan visual efek (masih disembunyikan)
         BuildVortexVisual();
         SetVortexActive(false);
+
+        // Jika startLocked, nonaktifkan trigger collider sampai portal dibuka
+        if (startLocked)
+        {
+            triggerZone.enabled = false;
+            isOpen = false;
+            Debug.Log("[PortalController] Portal mulai dalam keadaan terkunci.");
+        }
     }
 
     void Update()
@@ -105,6 +122,11 @@ public class PortalController : MonoBehaviour
     {
         if (isOpen) return;
         isOpen = true;
+
+        // Re-enable the trigger collider so OnTriggerEnter fires again
+        if (triggerZone != null)
+            triggerZone.enabled = true;
+
         SetVortexActive(true);
         StartCoroutine(OpenAnimation());
         Debug.Log("[PortalController] Portal01 terbuka!");
@@ -301,7 +323,12 @@ public class PortalController : MonoBehaviour
         if (isLoading) yield break;
         isLoading = true;
 
-        Debug.Log("[PortalController] Player masuk portal! Memuat level berikutnya...");
+        Debug.Log("[PortalController] Player masuk portal! Menyimpan progres dan memuat scene...");
+
+        // ── Simpan progres Level 2 Unlocked ────────────────────────
+        PlayerPrefs.SetInt("Level2Unlocked", 1);
+        PlayerPrefs.Save();
+        Debug.Log("[PortalController] Level2Unlocked disimpan ke PlayerPrefs.");
 
         // Beritahu FlowerCollectionManager untuk tampilkan popup loading
         if (FlowerCollectionManager.Instance != null)
@@ -309,11 +336,20 @@ public class PortalController : MonoBehaviour
 
         yield return new WaitForSeconds(loadDelay);
 
-        // Load scene
-        if (!string.IsNullOrEmpty(nextSceneName))
-            SceneManager.LoadScene(nextSceneName);
+        // ── Tentukan scene tujuan ──────────────────────────────────
+        if (returnToMenu)
+        {
+            // Kembali ke Main Menu (peta level) — player akan melihat Level 2 terbuka
+            SceneManager.LoadScene("Main Menu");
+        }
         else
-            SceneManager.LoadScene(nextSceneIndex);
+        {
+            // Langsung ke scene level berikutnya
+            if (!string.IsNullOrEmpty(nextSceneName))
+                SceneManager.LoadScene(nextSceneName);
+            else
+                SceneManager.LoadScene(nextSceneIndex);
+        }
     }
 
     // ─────────────────────────────────────────────

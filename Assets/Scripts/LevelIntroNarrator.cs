@@ -62,7 +62,7 @@ public class LevelIntroNarrator : MonoBehaviour
     // ─────────────────────────────────────────────
 
     // Each entry: [levelIndex][pageIndex]
-    private static readonly string[] PageTitles = { "✨ Kisah", "🎯 Misi", "🕹️ Tutorial" };
+    private static readonly string[] PageTitles = { "Kisah", "Misi", "Tutorial" };
 
     private static readonly string[,] PageContent = new string[2, 3]
     {
@@ -77,7 +77,7 @@ public class LevelIntroNarrator : MonoBehaviour
             "Cahayanya adalah harapanku satu-satunya untuk pulang.\"",
 
             // Page 2 — Mission
-            "🌸  MISI LEVEL 1\n\n" +
+            "MISI LEVEL 1\n\n" +
             "Kumpulkan  <color=#00FFCC><b>3 Sundrop Flower</b></color>  yang tersebar di hutan.\n\n" +
             "Setelah semua bunga terkumpul, portal cahaya akan terbuka.\n\n" +
             "Masuki portal untuk melanjutkan perjalananmu menuju Festival Lentera!",
@@ -95,7 +95,7 @@ public class LevelIntroNarrator : MonoBehaviour
             "cahayanya akan memecah kabut sihir dan membuka jalanku menuju kebebasan.\"",
 
             // Page 2 — Mission
-            "🏮  MISI LEVEL 2\n\n" +
+            "MISI LEVEL 2\n\n" +
             "Nyalakan  <color=#FFD700><b>3 Crystal Lantern</b></color>  yang tersembunyi dalam kabut.\n\n" +
             "Setiap lentera yang menyala akan mengusir sebagian kabut ajaib Gothel.\n\n" +
             "Nyalakan semua lentera untuk membuka jalan menuju Festival Lentera!",
@@ -205,7 +205,7 @@ public class LevelIntroNarrator : MonoBehaviour
         // Next button label
         bool isLastPage = (pageIndex >= TOTAL_PAGES - 1);
         if (nextButtonLabel != null)
-            nextButtonLabel.text = isLastPage ? "🚀  START GAME" : "Lanjut  ➜";
+            nextButtonLabel.text = isLastPage ? "START GAME" : "Lanjut";
 
         // Back button — hide on first page to avoid navigating away accidentally
         if (backButton != null)

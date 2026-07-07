@@ -12,6 +12,9 @@ public class PlayerTPS : MonoBehaviour
 
     [Header("Jump")]
     [SerializeField] private float jumpForce = 5f;
+    [Tooltip("Berapa lama (detik) input jump disimpan sebelum dieksekusi. Berguna agar tombol mobile tidak terlewat.")]
+    [SerializeField] private float jumpBufferTime = 0.15f;
+    private float jumpBufferCounter;
 
     [Header("Gravity")]
     [SerializeField] private float gravity = -9.81f;
@@ -127,17 +130,30 @@ public class PlayerTPS : MonoBehaviour
     /// Called by the on-screen Jump Button's OnClick() event.
     /// Wire this in the Inspector: Button → OnClick() → PlayerTPS.OnMobileJumpPressed
     /// </summary>
+    /// <summary>
+    /// Dipanggil oleh MobileJumpButton (IPointerDownHandler) saat tombol disentuh.
+    /// Menggunakan jump buffer agar input tidak terlewat karena perbedaan timing frame.
+    /// </summary>
     public void OnMobileJumpPressed()
     {
         jumpPressed = true;
+        jumpBufferCounter = jumpBufferTime;  // mulai buffer timer
     }
 
     private void HandleJump()
     {
-        if (jumpPressed && isGrounded)
+        // Kurangi buffer timer setiap frame
+        if (jumpBufferCounter > 0)
+            jumpBufferCounter -= Time.deltaTime;
+
+        // Eksekusi jump jika ada input aktif (keyboard ATAU tombol mobile via buffer)
+        bool shouldJump = jumpPressed || jumpBufferCounter > 0;
+
+        if (shouldJump && isGrounded)
         {
             velocityY = Mathf.Sqrt(jumpForce * -2f * gravity);
             animator.SetTrigger("jump");
+            jumpBufferCounter = 0;  // reset buffer setelah jump berhasil
         }
 
         jumpPressed = false;

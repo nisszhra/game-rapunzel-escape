@@ -33,6 +33,7 @@ public class PlayerTPS : MonoBehaviour
     [SerializeField] private Joystick mobileJoystick;
 
     private bool isGrounded;
+    private bool isWalking;   // track state untuk walk sound
 
     private CharacterController controller;
     private TPS inputActions;
@@ -119,11 +120,18 @@ public class PlayerTPS : MonoBehaviour
             controller.Move(moveDirection.normalized * moveSpeed * Time.deltaTime);
 
             animator.SetBool("isWalk", true);
+            isWalking = true;
         }
         else
         {
             animator.SetBool("isWalk", false);
+            isWalking = false;
         }
+
+        // Beritahu AudioManager untuk memainkan / menghentikan walk sound
+        // (hanya saat grounded agar tidak berbunyi di udara)
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.SetWalkSoundActive(isWalking && isGrounded);
     }
 
     /// <summary>

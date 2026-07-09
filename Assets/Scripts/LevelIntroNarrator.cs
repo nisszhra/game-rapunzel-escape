@@ -24,7 +24,7 @@ public class LevelIntroNarrator : MonoBehaviour
     [Tooltip("e.g. '1 / 3'")]
     public TextMeshProUGUI pageIndicatorText;
 
-    [Tooltip("Page title — 'Kisah', 'Misi', 'Tutorial'")]
+    [Tooltip("Page title — 'STORY', 'MISSION', 'TUTORIAL'")]
     public TextMeshProUGUI pageTitleText;
 
     [Tooltip("Main body text for Story and Mission pages.")]
@@ -62,7 +62,7 @@ public class LevelIntroNarrator : MonoBehaviour
     // ─────────────────────────────────────────────
 
     // Each entry: [levelIndex][pageIndex]
-    private static readonly string[] PageTitles = { "Kisah", "Misi", "Tutorial" };
+    private static readonly string[] PageTitles = { "STORY", "MISSION", "TUTORIAL" };
 
     private static readonly string[,] PageContent = new string[2, 3]
     {
@@ -78,12 +78,12 @@ public class LevelIntroNarrator : MonoBehaviour
 
             // Page 2 — Mission
             "MISI LEVEL 1\n\n" +
-            "Kumpulkan  <color=#00FFCC><b>3 Sundrop Flower</b></color>  yang tersebar di hutan.\n\n" +
+            "Kumpulkan  <color=#34EEFF><b>3 Sundrop Flower</b></color>  yang tersebar di hutan.\n\n" +
             "Setelah semua bunga terkumpul, portal cahaya akan terbuka.\n\n" +
             "Masuki portal untuk melanjutkan perjalananmu menuju Festival Lentera!",
 
             // Page 3 — Tutorial (shown alongside tutorialImage)
-            "Gunakan kontrol berikut untuk menggerakkan Rapunzel:"
+            ""
         },
         // ── LEVEL 2 ─────────────────────────────────────────────────────────────────
         {
@@ -96,12 +96,12 @@ public class LevelIntroNarrator : MonoBehaviour
 
             // Page 2 — Mission
             "MISI LEVEL 2\n\n" +
-            "Nyalakan  <color=#FFD700><b>3 Crystal Lantern</b></color>  yang tersembunyi dalam kabut.\n\n" +
+            "Nyalakan  <color=#34EEFF><b>3 Crystal Lantern</b></color>  yang tersembunyi dalam kabut.\n\n" +
             "Setiap lentera yang menyala akan mengusir sebagian kabut ajaib Gothel.\n\n" +
             "Nyalakan semua lentera untuk membuka jalan menuju Festival Lentera!",
 
             // Page 3 — Tutorial
-            "Kontrol sama seperti sebelumnya — kamu sudah berpengalaman sekarang!"
+            ""
         }
     };
 

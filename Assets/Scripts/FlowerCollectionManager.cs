@@ -12,6 +12,13 @@ public class FlowerCollectionManager : MonoBehaviour
 {
     public static FlowerCollectionManager Instance { get; private set; }
 
+    /// <summary>
+    /// Event yang di-fire setiap kali jumlah bunga berubah.
+    /// Parameter: (collectedCount, totalFlowers)
+    /// Subscribe oleh GameUIManager untuk update CollectPanel.
+    /// </summary>
+    public static event System.Action<int, int> OnFlowerCountChanged;
+
     [Header("Collection Settings")]
     public int totalFlowers = 3;
     private int collectedCount = 0;
@@ -26,8 +33,6 @@ public class FlowerCollectionManager : MonoBehaviour
     private Text popupText;
     private Image popupBG;
     private Image accentLineImg;
-    private Text counterText;
-    private GameObject counterPanel;
 
     // Portal-enter popup (overlay gelap + teks)
     private GameObject portalPopupPanel;
@@ -64,12 +69,8 @@ public class FlowerCollectionManager : MonoBehaviour
         // Reset jumlah bunga yang dikumpulkan
         collectedCount = 0;
 
-        // Reset tampilan counter
-        if (counterText != null)
-        {
-            counterText.text = $"0 / {totalFlowers}";
-            counterText.color = Color.white;
-        }
+        // Beritahu subscriber (GameUIManager) bahwa count di-reset
+        OnFlowerCountChanged?.Invoke(0, totalFlowers);
 
         // Reset warna accent line popup
         if (accentLineImg != null)
@@ -127,51 +128,6 @@ public class FlowerCollectionManager : MonoBehaviour
         CanvasScaler scaler = canvasGO.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
-
-        // ── Counter Panel (pojok kanan atas) ───────────────────
-        counterPanel = new GameObject("CounterPanel");
-        counterPanel.transform.SetParent(canvasGO.transform, false);
-
-        Image counterBG = counterPanel.AddComponent<Image>();
-        counterBG.color = new Color(0f, 0f, 0f, 0.6f);
-
-        RectTransform counterRect = counterPanel.GetComponent<RectTransform>();
-        counterRect.anchorMin = new Vector2(1f, 1f);
-        counterRect.anchorMax = new Vector2(1f, 1f);
-        counterRect.pivot = new Vector2(1f, 1f);
-        counterRect.anchoredPosition = new Vector2(-30f, -30f);
-        counterRect.sizeDelta = new Vector2(220f, 70f);
-
-        // Icon bunga di counter
-        GameObject iconGO = new GameObject("FlowerIcon");
-        iconGO.transform.SetParent(counterPanel.transform, false);
-        Text iconText = iconGO.AddComponent<Text>();
-        iconText.text = "🌸";
-        iconText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        iconText.fontSize = 30;
-        iconText.alignment = TextAnchor.MiddleLeft;
-        iconText.color = Color.white;
-        RectTransform iconRect = iconGO.GetComponent<RectTransform>();
-        iconRect.anchorMin = Vector2.zero;
-        iconRect.anchorMax = Vector2.one;
-        iconRect.offsetMin = new Vector2(10f, 0f);
-        iconRect.offsetMax = new Vector2(-120f, 0f);
-
-        // Teks counter
-        GameObject counterTextGO = new GameObject("CounterText");
-        counterTextGO.transform.SetParent(counterPanel.transform, false);
-        counterText = counterTextGO.AddComponent<Text>();
-        counterText.text = $"0 / {totalFlowers}";
-        counterText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        counterText.fontSize = 28;
-        counterText.fontStyle = FontStyle.Bold;
-        counterText.alignment = TextAnchor.MiddleRight;
-        counterText.color = Color.white;
-        RectTransform counterTextRect = counterTextGO.GetComponent<RectTransform>();
-        counterTextRect.anchorMin = Vector2.zero;
-        counterTextRect.anchorMax = Vector2.one;
-        counterTextRect.offsetMin = new Vector2(50f, 0f);
-        counterTextRect.offsetMax = new Vector2(-15f, 0f);
 
         // ── Popup Panel (tengah bawah) ──────────────────────────
         popupPanel = new GameObject("PopupPanel");
@@ -305,7 +261,8 @@ public class FlowerCollectionManager : MonoBehaviour
         collectedCount++;
         collectedCount = Mathf.Clamp(collectedCount, 0, totalFlowers);
 
-        counterText.text = $"{collectedCount} / {totalFlowers}";
+        // Fire event agar GameUIManager bisa update CollectPanel
+        OnFlowerCountChanged?.Invoke(collectedCount, totalFlowers);
 
         bool isComplete = collectedCount >= totalFlowers;
 
@@ -313,14 +270,12 @@ public class FlowerCollectionManager : MonoBehaviour
         if (isComplete)
         {
             message = $"✨  Semua bunga terkumpul!  {collectedCount}/{totalFlowers}  — Portal Terbuka!";
-            counterText.color = new Color(0f, 1f, 0.95f);
             if (accentLineImg != null) accentLineImg.color = new Color(0f, 1f, 0.95f, 1f);
             OpenPortalIfReady();
         }
         else
         {
             message = $"🌸  Bunga diambil!  {collectedCount}/{totalFlowers}";
-            counterText.color = Color.white;
         }
 
         ShowPopup(message, isComplete);

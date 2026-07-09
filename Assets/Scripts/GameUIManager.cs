@@ -61,15 +61,25 @@ public class GameUIManager : MonoBehaviour
     [Tooltip("Warna timer saat tersisa ≤ 30 detik (peringatan).")]
     public Color timerWarningColor = new Color(1f, 0.35f, 0.1f, 1f); // oranye-merah
 
-    [Header("=== GAME OVER PANEL ===")]
-    [Tooltip("Panel Game Over — dibuat otomatis jika dikosongkan.")]
-    public GameObject gameOverPanel;
+    [Header("=== TIMES UP PANEL ===")]
+    [Tooltip("Panel Times Up (yang sudah dibuat di hirarki).")]
+    public GameObject timesUpPanel;
 
-    [Tooltip("Tombol Restart di dalam GameOverPanel (opsional, bisa auto-find).")]
-    public Button gameOverRestartButton;
+    [Tooltip("Tombol Restart di dalam TimesUpPanel.")]
+    public Button timesUpRestartButton;
 
-    [Tooltip("Tombol Home di dalam GameOverPanel (opsional, bisa auto-find).")]
-    public Button gameOverHomeButton;
+    [Tooltip("Tombol Home di dalam TimesUpPanel.")]
+    public Button timesUpHomeButton;
+
+    [Header("=== END LEVEL PANEL ===")]
+    [Tooltip("Panel End Level (yang sudah dibuat di hirarki).")]
+    public GameObject endLevelPanel;
+
+    [Tooltip("Tombol Next di dalam EndLevelPanel.")]
+    public Button endLevelNextButton;
+
+    [Tooltip("Tombol Home di dalam EndLevelPanel.")]
+    public Button endLevelHomeButton;
 
     [Header("=== SCENE NAMES ===")]
     [Tooltip("Nama scene Main Menu persis seperti di Build Settings.")]
@@ -93,11 +103,14 @@ public class GameUIManager : MonoBehaviour
 
     private void Awake()
     {
+        // Tambahkan sistem Minimap secara otomatis
+        if (GetComponent<MinimapSystem>() == null)
+        {
+            gameObject.AddComponent<MinimapSystem>();
+        }
+
         // Auto-find by name jika belum di-assign di Inspector
         AutoFindReferences();
-
-        // Pastikan GameOverPanel dibuat jika belum ada
-        EnsureGameOverPanel();
     }
 
     private void Start()
@@ -111,7 +124,8 @@ public class GameUIManager : MonoBehaviour
 
         // ── Sembunyikan panel di awal ──
         if (pausePanel   != null) pausePanel.SetActive(false);
-        if (gameOverPanel!= null) gameOverPanel.SetActive(false);
+        if (timesUpPanel != null) timesUpPanel.SetActive(false);
+        if (endLevelPanel != null) endLevelPanel.SetActive(false);
 
         // ── Wire button listeners ──
         WireButtons();
@@ -190,6 +204,13 @@ public class GameUIManager : MonoBehaviour
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
+    /// <summary>Lanjut ke level berikutnya.</summary>
+    public void NextLevel()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("TPS 2");
+    }
+
     // ──────────────────────────────────────────────────────────
     //  Collect Panel UI
     // ──────────────────────────────────────────────────────────
@@ -234,9 +255,26 @@ public class GameUIManager : MonoBehaviour
         Time.timeScale = 0f;
 
         if (pausePanel   != null) pausePanel.SetActive(false);
-        if (gameOverPanel!= null) gameOverPanel.SetActive(true);
+        if (timesUpPanel != null) timesUpPanel.SetActive(true);
 
-        Debug.Log("[GameUIManager] GAME OVER — waktu habis!");
+        Debug.Log("[GameUIManager] TIMES UP — waktu habis!");
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  End Level
+    // ──────────────────────────────────────────────────────────
+    
+    public void ShowEndLevelPanel()
+    {
+        if (_isGameOver) return;
+        _isGameOver  = true;
+        _timerActive = false;
+        Time.timeScale = 0f;
+
+        if (pausePanel   != null) pausePanel.SetActive(false);
+        if (endLevelPanel != null) endLevelPanel.SetActive(true);
+
+        Debug.Log("[GameUIManager] LEVEL COMPLETE!");
     }
 
     // ──────────────────────────────────────────────────────────
@@ -250,9 +288,13 @@ public class GameUIManager : MonoBehaviour
         if (restartButton != null) restartButton.onClick.AddListener(Restart);
         if (homeButton    != null) homeButton.onClick.AddListener(GoHome);
 
-        // GameOver panel buttons
-        if (gameOverRestartButton != null) gameOverRestartButton.onClick.AddListener(Restart);
-        if (gameOverHomeButton    != null) gameOverHomeButton.onClick.AddListener(GoHome);
+        // TimesUp panel buttons
+        if (timesUpRestartButton != null) timesUpRestartButton.onClick.AddListener(Restart);
+        if (timesUpHomeButton    != null) timesUpHomeButton.onClick.AddListener(GoHome);
+
+        // EndLevel panel buttons
+        if (endLevelNextButton != null) endLevelNextButton.onClick.AddListener(NextLevel);
+        if (endLevelHomeButton != null) endLevelHomeButton.onClick.AddListener(GoHome);
     }
 
     // ──────────────────────────────────────────────────────────
@@ -273,7 +315,20 @@ public class GameUIManager : MonoBehaviour
 
         TryFindGO    (ref collectPanel,  root, "CollectPanel");
         TryFindGO    (ref timerPanel,    root, "TimerPanel");
-        TryFindGO    (ref gameOverPanel, root, "GameOverPanel");
+
+        TryFindGO    (ref timesUpPanel, root, "TimesUpPanel");
+        if (timesUpPanel != null)
+        {
+            TryFindButton(ref timesUpRestartButton, timesUpPanel.transform, "RestartButton");
+            TryFindButton(ref timesUpHomeButton,    timesUpPanel.transform, "HomeButton");
+        }
+
+        TryFindGO    (ref endLevelPanel, root, "EndLevelPanel");
+        if (endLevelPanel != null)
+        {
+            TryFindButton(ref endLevelNextButton, endLevelPanel.transform, "NextButton");
+            TryFindButton(ref endLevelHomeButton, endLevelPanel.transform, "HomeButton");
+        }
 
         // Cari Text di dalam CollectPanel & TimerPanel
         if (collectText == null && collectPanel != null)
@@ -305,159 +360,5 @@ public class GameUIManager : MonoBehaviour
             if (found != null) return found;
         }
         return null;
-    }
-
-    // ──────────────────────────────────────────────────────────
-    //  Helper: Buat GameOverPanel jika belum ada
-    // ──────────────────────────────────────────────────────────
-
-    private void EnsureGameOverPanel()
-    {
-        if (gameOverPanel != null) return;
-
-        // Cari canvas root
-        Canvas canvas = GetComponentInParent<Canvas>();
-        if (canvas == null) canvas = GetComponent<Canvas>();
-        if (canvas == null)
-        {
-            Debug.LogWarning("[GameUIManager] Tidak menemukan Canvas untuk membuat GameOverPanel.");
-            return;
-        }
-
-        Transform canvasT = canvas.transform;
-
-        // ── Root panel (full-screen semi-transparent) ──
-        gameOverPanel = new GameObject("GameOverPanel");
-        gameOverPanel.transform.SetParent(canvasT, false);
-
-        Image bg = gameOverPanel.AddComponent<Image>();
-        bg.color = new Color(0f, 0f, 0f, 0.82f);
-
-        RectTransform bgRT = gameOverPanel.GetComponent<RectTransform>();
-        bgRT.anchorMin = Vector2.zero;
-        bgRT.anchorMax = Vector2.one;
-        bgRT.offsetMin = Vector2.zero;
-        bgRT.offsetMax = Vector2.zero;
-
-        // ── Kotak tengah ──
-        GameObject box = new GameObject("Box");
-        box.transform.SetParent(gameOverPanel.transform, false);
-
-        Image boxImg = box.AddComponent<Image>();
-        boxImg.color = new Color(0.08f, 0.05f, 0.12f, 0.97f);
-
-        RectTransform boxRT = box.GetComponent<RectTransform>();
-        boxRT.anchorMin = new Vector2(0.5f, 0.5f);
-        boxRT.anchorMax = new Vector2(0.5f, 0.5f);
-        boxRT.pivot     = new Vector2(0.5f, 0.5f);
-        boxRT.sizeDelta = new Vector2(520f, 320f);
-        boxRT.anchoredPosition = Vector2.zero;
-
-        // Garis merah atas
-        CreateLine(box.transform, "TopLine", new Color(1f, 0.2f, 0.2f, 1f), isTop: true);
-        CreateLine(box.transform, "BotLine", new Color(1f, 0.2f, 0.2f, 1f), isTop: false);
-
-        // ── Judul "GAME OVER" ──
-        GameObject titleGO = new GameObject("TitleText");
-        titleGO.transform.SetParent(box.transform, false);
-        Text title = titleGO.AddComponent<Text>();
-        title.text      = "⏰  WAKTU HABIS!";
-        title.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        title.fontSize  = 42;
-        title.fontStyle = FontStyle.Bold;
-        title.alignment = TextAnchor.MiddleCenter;
-        title.color     = new Color(1f, 0.3f, 0.3f, 1f);
-        RectTransform titleRT = titleGO.GetComponent<RectTransform>();
-        titleRT.anchorMin = new Vector2(0f, 0.6f);
-        titleRT.anchorMax = new Vector2(1f, 1f);
-        titleRT.offsetMin = new Vector2(10f, -10f);
-        titleRT.offsetMax = new Vector2(-10f, -10f);
-
-        // ── Sub teks ──
-        GameObject subGO = new GameObject("SubText");
-        subGO.transform.SetParent(box.transform, false);
-        Text sub = subGO.AddComponent<Text>();
-        sub.text      = "Waktu kamu telah habis.\nCoba lagi?";
-        sub.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        sub.fontSize  = 22;
-        sub.alignment = TextAnchor.MiddleCenter;
-        sub.color     = new Color(0.85f, 0.85f, 0.9f, 1f);
-        RectTransform subRT = subGO.GetComponent<RectTransform>();
-        subRT.anchorMin = new Vector2(0f, 0.38f);
-        subRT.anchorMax = new Vector2(1f, 0.62f);
-        subRT.offsetMin = new Vector2(10f, 0f);
-        subRT.offsetMax = new Vector2(-10f, 0f);
-
-        // ── Tombol Restart ──
-        gameOverRestartButton = CreateSimpleButton(
-            box.transform, "GORestartButton", "🔄  Restart",
-            new Vector2(-90f, -90f), new Vector2(180f, 55f),
-            new Color(0.85f, 0.2f, 0.2f, 1f));
-
-        // ── Tombol Home ──
-        gameOverHomeButton = CreateSimpleButton(
-            box.transform, "GOHomeButton", "🏠  Menu Utama",
-            new Vector2(90f, -90f), new Vector2(180f, 55f),
-            new Color(0.2f, 0.2f, 0.6f, 1f));
-
-        gameOverPanel.SetActive(false);
-        Debug.Log("[GameUIManager] GameOverPanel dibuat secara otomatis.");
-    }
-
-    private void CreateLine(Transform parent, string name, Color color, bool isTop)
-    {
-        GameObject lineGO = new GameObject(name);
-        lineGO.transform.SetParent(parent, false);
-        Image img = lineGO.AddComponent<Image>();
-        img.color = color;
-        RectTransform rt = lineGO.GetComponent<RectTransform>();
-        rt.anchorMin = isTop ? new Vector2(0f, 1f) : new Vector2(0f, 0f);
-        rt.anchorMax = isTop ? new Vector2(1f, 1f) : new Vector2(1f, 0f);
-        rt.pivot     = isTop ? new Vector2(0.5f, 1f) : new Vector2(0.5f, 0f);
-        rt.anchoredPosition = Vector2.zero;
-        rt.sizeDelta = new Vector2(0f, 5f);
-    }
-
-    private Button CreateSimpleButton(Transform parent, string name, string label,
-        Vector2 anchoredPos, Vector2 size, Color bgColor)
-    {
-        GameObject btnGO = new GameObject(name);
-        btnGO.transform.SetParent(parent, false);
-
-        Image btnImg = btnGO.AddComponent<Image>();
-        btnImg.color = bgColor;
-
-        Button btn = btnGO.AddComponent<Button>();
-
-        ColorBlock cb = btn.colors;
-        cb.normalColor      = bgColor;
-        cb.highlightedColor = bgColor * 1.2f;
-        cb.pressedColor     = bgColor * 0.7f;
-        btn.colors = cb;
-
-        RectTransform rt = btnGO.GetComponent<RectTransform>();
-        rt.anchorMin       = new Vector2(0.5f, 0.5f);
-        rt.anchorMax       = new Vector2(0.5f, 0.5f);
-        rt.pivot           = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition= anchoredPos;
-        rt.sizeDelta       = size;
-
-        // Label text
-        GameObject textGO = new GameObject("Label");
-        textGO.transform.SetParent(btnGO.transform, false);
-        Text txt = textGO.AddComponent<Text>();
-        txt.text      = label;
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        txt.fontSize  = 20;
-        txt.fontStyle = FontStyle.Bold;
-        txt.alignment = TextAnchor.MiddleCenter;
-        txt.color     = Color.white;
-        RectTransform txtRT = textGO.GetComponent<RectTransform>();
-        txtRT.anchorMin = Vector2.zero;
-        txtRT.anchorMax = Vector2.one;
-        txtRT.offsetMin = Vector2.zero;
-        txtRT.offsetMax = Vector2.zero;
-
-        return btn;
     }
 }

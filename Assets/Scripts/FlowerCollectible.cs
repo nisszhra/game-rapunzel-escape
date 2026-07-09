@@ -23,6 +23,7 @@ public class FlowerCollectible : MonoBehaviour
     public float bobHeight = 0.15f;
 
     private SphereCollider triggerCollider;
+    private Light glowLight;
     private bool isCollected = false;
     private Vector3 startPosition;
 
@@ -32,6 +33,20 @@ public class FlowerCollectible : MonoBehaviour
         triggerCollider = GetComponent<SphereCollider>();
         triggerCollider.isTrigger = true;
         triggerCollider.radius = collectRadius;
+        
+        // Pastikan ada Rigidbody (Kinematic) agar OnTriggerEnter selalu terpanggil
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
+        // Tambahkan efek cahaya (Point Light)
+        glowLight = gameObject.AddComponent<Light>();
+        glowLight.type = LightType.Point;
+        glowLight.color = new Color(0.2f, 1f, 0.95f, 1f); // Cyan muda bercahaya
+        glowLight.intensity = 3f;
+        glowLight.range = 4f;
+
         startPosition = transform.position;
     }
 
@@ -52,8 +67,8 @@ public class FlowerCollectible : MonoBehaviour
     {
         if (isCollected) return;
 
-        // Cek apakah yang masuk adalah player
-        if (other.CompareTag(playerTag) || other.name.Contains("rapunzel"))
+        // Cek apakah yang masuk adalah player (case-insensitive)
+        if (other.CompareTag(playerTag) || other.name.ToLower().Contains("rapunzel") || other.name.ToLower().Contains("player"))
         {
             Collect();
         }

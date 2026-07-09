@@ -323,32 +323,36 @@ public class PortalController : MonoBehaviour
         if (isLoading) yield break;
         isLoading = true;
 
-        Debug.Log("[PortalController] Player masuk portal! Menyimpan progres dan memuat scene...");
+        Debug.Log("[PortalController] Player masuk portal! Menyimpan progres dan memunculkan EndLevelPanel...");
 
         // ── Simpan progres Level 2 Unlocked ────────────────────────
         PlayerPrefs.SetInt("Level2Unlocked", 1);
         PlayerPrefs.Save();
         Debug.Log("[PortalController] Level2Unlocked disimpan ke PlayerPrefs.");
 
-        // Beritahu FlowerCollectionManager untuk tampilkan popup loading
-        if (FlowerCollectionManager.Instance != null)
-            FlowerCollectionManager.Instance.ShowPortalEnterPopup();
-
-        yield return new WaitForSeconds(loadDelay);
-
-        // ── Tentukan scene tujuan ──────────────────────────────────
-        if (returnToMenu)
+        // Tampilkan EndLevelPanel dari GameUIManager
+        GameUIManager uiManager = FindObjectOfType<GameUIManager>();
+        if (uiManager != null)
         {
-            // Kembali ke Main Menu (peta level) — player akan melihat Level 2 terbuka
-            SceneManager.LoadScene("Main Menu");
+            uiManager.ShowEndLevelPanel();
         }
         else
         {
-            // Langsung ke scene level berikutnya
-            if (!string.IsNullOrEmpty(nextSceneName))
-                SceneManager.LoadScene(nextSceneName);
+            Debug.LogWarning("[PortalController] GameUIManager tidak ditemukan, tidak bisa memunculkan EndLevelPanel.");
+            
+            // Fallback load scene (jika UI tidak ada)
+            yield return new WaitForSeconds(loadDelay);
+            if (returnToMenu)
+            {
+                SceneManager.LoadScene("Main Menu");
+            }
             else
-                SceneManager.LoadScene(nextSceneIndex);
+            {
+                if (!string.IsNullOrEmpty(nextSceneName))
+                    SceneManager.LoadScene(nextSceneName);
+                else
+                    SceneManager.LoadScene(nextSceneIndex);
+            }
         }
     }
 

@@ -119,6 +119,8 @@ public class FlowerCollectionManager : MonoBehaviour
     {
         // ── Canvas ──────────────────────────────────────────────
         GameObject canvasGO = new GameObject("FlowerCollectionCanvas");
+        canvasGO.transform.SetParent(transform, false); // Jadikan child agar ikut DontDestroyOnLoad
+        
         uiCanvas = canvasGO.AddComponent<Canvas>();
         uiCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         uiCanvas.sortingOrder = 100;
@@ -220,7 +222,7 @@ public class FlowerCollectionManager : MonoBehaviour
         GameObject titleGO = new GameObject("PortalTitle");
         titleGO.transform.SetParent(portalPopupPanel.transform, false);
         Text titleText = titleGO.AddComponent<Text>();
-        titleText.text = "🌀  PORTAL TERBUKA!";
+        titleText.text = "PORTAL TERBUKA!";
         titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         titleText.fontSize = 34;
         titleText.fontStyle = FontStyle.Bold;
@@ -269,13 +271,13 @@ public class FlowerCollectionManager : MonoBehaviour
         string message;
         if (isComplete)
         {
-            message = $"✨  Semua bunga terkumpul!  {collectedCount}/{totalFlowers}  — Portal Terbuka!";
+            message = $"Semua bunga terkumpul!\n Portal Terbuka!";
             if (accentLineImg != null) accentLineImg.color = new Color(0f, 1f, 0.95f, 1f);
             OpenPortalIfReady();
         }
         else
         {
-            message = $"🌸  Bunga diambil!  {collectedCount}/{totalFlowers}";
+            message = $"Bunga diambil!";
         }
 
         ShowPopup(message, isComplete);

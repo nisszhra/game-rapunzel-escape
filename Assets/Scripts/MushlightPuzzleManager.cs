@@ -110,6 +110,10 @@ public class MushlightPuzzleManager : MonoBehaviour
             if (f != null) f.gameObject.SetActive(true);
         }
 
+        // Aktifkan HintButton
+        var uiManager = FindAnyObjectByType<GameUIManager>();
+        if (uiManager != null) uiManager.EnableHintButton();
+
         // Tampilkan Popup Notifikasi
         StartCoroutine(ShowPopupRoutine());
     }

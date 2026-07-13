@@ -75,11 +75,21 @@ public class GameUIManager : MonoBehaviour
     [Tooltip("Panel End Level (yang sudah dibuat di hirarki).")]
     public GameObject endLevelPanel;
 
-    [Tooltip("Tombol Next di dalam EndLevelPanel.")]
-    public Button endLevelNextButton;
+    [Tooltip("Tombol Restart di dalam EndLevelPanel.")]
+    public Button endLevelRestartButton;
 
     [Tooltip("Tombol Home di dalam EndLevelPanel.")]
     public Button endLevelHomeButton;
+
+    [Header("=== HINT ===")]
+    [Tooltip("Tombol Hint (di-disable sampai semua jamur dinyalakan).")]
+    public Button hintButton;
+
+    [Tooltip("Panel Hint yang muncul saat HintButton diklik.")]
+    public GameObject hintPanel;
+
+    [Tooltip("Tombol Exit di dalam HintPanel.")]
+    public Button hintExitButton;
 
     [Header("=== SCENE NAMES ===")]
     [Tooltip("Nama scene Main Menu persis seperti di Build Settings.")]
@@ -123,9 +133,13 @@ public class GameUIManager : MonoBehaviour
         _timerActive   = true;
 
         // ── Sembunyikan panel di awal ──
-        if (pausePanel   != null) pausePanel.SetActive(false);
-        if (timesUpPanel != null) timesUpPanel.SetActive(false);
+        if (pausePanel    != null) pausePanel.SetActive(false);
+        if (timesUpPanel  != null) timesUpPanel.SetActive(false);
         if (endLevelPanel != null) endLevelPanel.SetActive(false);
+        if (hintPanel     != null) hintPanel.SetActive(false);
+
+        // ── HintButton di-disable sampai puzzle selesai ──
+        if (hintButton != null) hintButton.interactable = false;
 
         // ── Wire button listeners ──
         WireButtons();
@@ -271,10 +285,34 @@ public class GameUIManager : MonoBehaviour
         _timerActive = false;
         Time.timeScale = 0f;
 
-        if (pausePanel   != null) pausePanel.SetActive(false);
+        if (pausePanel    != null) pausePanel.SetActive(false);
+        if (hintPanel     != null) hintPanel.SetActive(false);
         if (endLevelPanel != null) endLevelPanel.SetActive(true);
 
         Debug.Log("[GameUIManager] LEVEL COMPLETE!");
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  Hint Panel (Timer TIDAK di-pause)
+    // ──────────────────────────────────────────────────────────
+
+    /// <summary>Aktifkan HintButton — dipanggil oleh MushlightPuzzleManager setelah semua jamur menyala.</summary>
+    public void EnableHintButton()
+    {
+        if (hintButton != null) hintButton.interactable = true;
+        Debug.Log("[GameUIManager] HintButton diaktifkan.");
+    }
+
+    /// <summary>Buka HintPanel. Timer TETAP berjalan.</summary>
+    public void OpenHintPanel()
+    {
+        if (hintPanel != null) hintPanel.SetActive(true);
+    }
+
+    /// <summary>Tutup HintPanel. Timer TETAP berjalan.</summary>
+    public void CloseHintPanel()
+    {
+        if (hintPanel != null) hintPanel.SetActive(false);
     }
 
     // ──────────────────────────────────────────────────────────
@@ -292,9 +330,13 @@ public class GameUIManager : MonoBehaviour
         if (timesUpRestartButton != null) timesUpRestartButton.onClick.AddListener(Restart);
         if (timesUpHomeButton    != null) timesUpHomeButton.onClick.AddListener(GoHome);
 
-        // EndLevel panel buttons
-        if (endLevelNextButton != null) endLevelNextButton.onClick.AddListener(NextLevel);
-        if (endLevelHomeButton != null) endLevelHomeButton.onClick.AddListener(GoHome);
+        // EndLevel panel buttons — RestartButton menjalankan Restart()
+        if (endLevelRestartButton != null) endLevelRestartButton.onClick.AddListener(Restart);
+        if (endLevelHomeButton    != null) endLevelHomeButton.onClick.AddListener(GoHome);
+
+        // Hint button + exit button
+        if (hintButton    != null) hintButton.onClick.AddListener(OpenHintPanel);
+        if (hintExitButton != null) hintExitButton.onClick.AddListener(CloseHintPanel);
     }
 
     // ──────────────────────────────────────────────────────────
@@ -326,8 +368,8 @@ public class GameUIManager : MonoBehaviour
         TryFindGO    (ref endLevelPanel, root, "EndLevelPanel");
         if (endLevelPanel != null)
         {
-            TryFindButton(ref endLevelNextButton, endLevelPanel.transform, "NextButton");
-            TryFindButton(ref endLevelHomeButton, endLevelPanel.transform, "HomeButton");
+            TryFindButton(ref endLevelRestartButton, endLevelPanel.transform, "RestartButton");
+            TryFindButton(ref endLevelHomeButton,    endLevelPanel.transform, "HomeButton");
         }
 
         // Cari Text di dalam CollectPanel & TimerPanel
@@ -335,7 +377,40 @@ public class GameUIManager : MonoBehaviour
             collectText = collectPanel.GetComponentInChildren<Text>(true);
         if (timerText   == null && timerPanel   != null)
             timerText   = timerPanel.GetComponentInChildren<Text>(true);
+
+        // ── Hint: cari dengan FindDeepInactive agar bisa temukan objek inactive ──
+        if (hintButton == null)
+        {
+            var hintBtnGO = FindDeepInactive(root, "HintButton");
+            if (hintBtnGO != null) hintButton = hintBtnGO.GetComponent<Button>();
+        }
+        if (hintPanel == null)
+        {
+            var hintPanelGO = FindDeepInactive(root, "HintPanel");
+            if (hintPanelGO != null) hintPanel = hintPanelGO;
+        }
+        if (hintExitButton == null && hintPanel != null)
+        {
+            var exitGO = FindDeepInactive(hintPanel.transform, "ExitButton");
+            if (exitGO != null) hintExitButton = exitGO.GetComponent<Button>();
+        }
     }
+
+    /// <summary>Cari transform berdasarkan nama, termasuk child yang inactive.</summary>
+    private static GameObject FindDeepInactive(Transform parent, string targetName)
+    {
+        if (parent.name == targetName) return parent.gameObject;
+        foreach (Transform child in parent)
+        {
+            var found = FindDeepInactive(child, targetName);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private static GameObject FindDeepInactive(GameObject go, string targetName)
+        => FindDeepInactive(go.transform, targetName);
+
 
     private static void TryFindGO(ref GameObject field, Transform root, string name)
     {

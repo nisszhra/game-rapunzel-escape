@@ -52,8 +52,8 @@ public class GameUIManager : MonoBehaviour
     [Tooltip("Text di dalam TimerPanel untuk menampilkan waktu MM:SS.")]
     public Text timerText;
 
-    [Tooltip("Durasi countdown dalam detik. Default 120 = 2 menit.")]
-    public float countdownSeconds = 120f;
+    [Tooltip("Durasi countdown dalam detik. Default 360 = 6 menit.")]
+    public float countdownSeconds = 360f;
 
     [Tooltip("Warna timer saat normal.")]
     public Color timerNormalColor = Color.white;

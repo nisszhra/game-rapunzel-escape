@@ -6,10 +6,11 @@ using UnityEngine.SceneManagement;
 ///   - Main Menu Music  : loop di scene Main Menu
 ///   - In-Game Music    : loop di scene game (non-Main-Menu)
 ///   - Walk Sound       : diputar saat karakter bergerak, dihentikan saat diam
+///   - Collect Sound    : diputar sekali saat bunga diambil
 ///
 /// SETUP:
 ///   1. Jalankan Tools → Setup Audio Manager di Unity Editor.
-///   2. Assign clip AudioSource (Main Menu Music, In-Game Music, Walk Sound) di Inspector.
+///   2. Assign clip AudioSource (Main Menu Music, In-Game Music, Walk Sound, Collect Sound) di Inspector.
 ///   3. Attach SettingsPanelUI ke Settings Panel di setiap scene.
 /// </summary>
 public class AudioManager : MonoBehaviour
@@ -30,6 +31,9 @@ public class AudioManager : MonoBehaviour
     [Tooltip("AudioSource untuk efek suara langkah. Loop = true.")]
     public AudioSource walkSoundSource;
 
+    [Tooltip("AudioSource untuk efek suara collect bunga. Loop = false.")]
+    public AudioSource collectSoundSource;
+
     [Header("Audio Clips")]
     [Tooltip("Clip musik main menu (main menu music.mp3).")]
     public AudioClip mainMenuMusicClip;
@@ -39,6 +43,9 @@ public class AudioManager : MonoBehaviour
 
     [Tooltip("Clip efek suara langkah (walk sound.mp3).")]
     public AudioClip walkSoundClip;
+
+    [Tooltip("Clip efek suara collect bunga (collect sound.mp3).")]
+    public AudioClip collectSoundClip;
 
     [Header("Default Settings")]
     [Range(0f, 1f)]
@@ -177,6 +184,25 @@ public class AudioManager : MonoBehaviour
     }
 
     // ──────────────────────────────────────────
+    //  Collect Sound Control (dipanggil oleh FlowerCollectible)
+    // ──────────────────────────────────────────
+
+    /// <summary>
+    /// Dipanggil oleh FlowerCollectible saat bunga berhasil diambil.
+    /// Memainkan collectSoundClip sekali (non-loop).
+    /// </summary>
+    public void PlayCollectSound()
+    {
+        if (collectSoundSource == null || collectSoundClip == null) return;
+        if (!_soundEnabled) return;
+
+        collectSoundSource.clip  = collectSoundClip;
+        collectSoundSource.loop  = false;
+        collectSoundSource.mute  = false;
+        collectSoundSource.Play();
+    }
+
+    // ──────────────────────────────────────────
     //  Public Settings API (dipanggil SettingsPanelUI)
     // ──────────────────────────────────────────
 
@@ -197,7 +223,7 @@ public class AudioManager : MonoBehaviour
         Debug.Log($"[AudioManager] Music: {(enabled ? "ON" : "OFF")}");
     }
 
-    /// <summary>Aktifkan / matikan efek suara (walk sound).</summary>
+    /// <summary>Aktifkan / matikan efek suara (walk sound + collect sound).</summary>
     public void SetSoundEnabled(bool enabled)
     {
         _soundEnabled = enabled;
@@ -208,6 +234,14 @@ public class AudioManager : MonoBehaviour
                 walkSoundSource.Stop();
 
             walkSoundSource.mute = !enabled;
+        }
+
+        if (collectSoundSource != null)
+        {
+            if (!enabled && collectSoundSource.isPlaying)
+                collectSoundSource.Stop();
+
+            collectSoundSource.mute = !enabled;
         }
 
         PlayerPrefs.SetInt(KEY_SOUND, enabled ? 1 : 0);
@@ -259,5 +293,8 @@ public class AudioManager : MonoBehaviour
 
         if (walkSoundSource != null)
             walkSoundSource.mute = !_soundEnabled;
+
+        if (collectSoundSource != null)
+            collectSoundSource.mute = !_soundEnabled;
     }
 }

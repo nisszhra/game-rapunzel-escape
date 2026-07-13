@@ -78,6 +78,12 @@ public class FlowerCollectible : MonoBehaviour
     {
         isCollected = true;
 
+        // Putar suara collect
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayCollectSound();
+        }
+
         // Lapor ke manager
         if (FlowerCollectionManager.Instance != null)
         {

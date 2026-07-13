@@ -77,7 +77,6 @@ public class LevelIntroNarrator : MonoBehaviour
             "Cahayanya adalah harapanku satu-satunya untuk pulang.\"",
 
             // Page 2 — Mission
-            "MISI LEVEL 1\n\n" +
             "Kumpulkan  <color=#34EEFF><b>3 Sundrop Flower</b></color>  yang tersebar di hutan.\n\n" +
             "Setelah semua bunga terkumpul, portal cahaya akan terbuka.\n\n" +
             "Masuki portal untuk melanjutkan perjalananmu menuju Festival Lentera!",
@@ -91,14 +90,13 @@ public class LevelIntroNarrator : MonoBehaviour
             "Rapunzel kini berdiri di pinggir hutan berkabut...\n\n" +
             "\"Aku berhasil melewati ilusi Gothel! Tapi kabutnya semakin tebal " +
             "dan Festival Lentera sudah terlihat dari kejauhan.\"\n\n" +
-            "\"Lentera-lentera kristal kuno ini — jika aku menyalakan semuanya, " +
-            "cahayanya akan memecah kabut sihir dan membuka jalanku menuju kebebasan.\"",
+            "\"Lentera-lentera kristal kuno ini adalah kuncinya. Jika aku menyalakan semuanya," +
+            " kabut sihir akan memudar dan menuntun langkahku untuk menemukan bunga legendaris penembus portal cahaya!\"",
 
             // Page 2 — Mission
-            "MISI LEVEL 2\n\n" +
-            "Nyalakan  <color=#34EEFF><b>3 Crystal Lantern</b></color>  yang tersembunyi dalam kabut.\n\n" +
-            "Setiap lentera yang menyala akan mengusir sebagian kabut ajaib Gothel.\n\n" +
-            "Nyalakan semua lentera untuk membuka jalan menuju Festival Lentera!",
+            "Temukan dan nyalakan <color=#34EEFF><b>3 Crystal Lantern</b></color> untuk mengusir kabut sihir Gothel\n\n" +
+            "Pendar cahaya lentera akan memecah kutukan dan memunculkan <color=#FFF034><b>3 Sundrop Flower</b></color> yang tersembunyi.\n\n" +
+            "Kumpulkan ketiga bunga legendaris tersebut untuk membuka portal menuju Festival Lentera!",
 
             // Page 3 — Tutorial
             ""
